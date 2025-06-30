@@ -17,11 +17,13 @@
     </script>
     <style>
         body { font-family: 'Inter', 'Noto Sans Devanagari', sans-serif; }
-        .markdown-content h2 { scroll-margin-top: 5rem; }
-        .toc a.active { color: #3b82f6; font-weight: 700; }
+        .markdown-content h2 { scroll-margin-top: 6rem; }
+        #progress-bar { position: fixed; top: 0; left: 0; height: 4px; background: linear-gradient(to right, #3b82f6, #8b5cf6); width: 0%; z-index: 50; transition: width 0.1s; }
     </style>
 </head>
 <body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 transition-colors duration-300">
+
+    <div id="progress-bar"></div>
 
     <!-- Header (Same as index.html) -->
     <header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg shadow-sm sticky top-0 z-20">
@@ -29,35 +31,44 @@
     </header>
 
     <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 lg:gap-12">
-            <article id="post-content" class="lg:col-span-3 bg-white dark:bg-slate-800 p-6 sm:p-8 md:p-12 rounded-2xl shadow-lg">
-                <!-- Post content will be injected here -->
-            </article>
-            <aside class="hidden lg:block">
-                <div id="table-of-contents" class="sticky top-28">
-                    <!-- TOC will be injected here -->
-                </div>
-            </aside>
-        </div>
+        <article id="post-content" class="max-w-4xl mx-auto bg-white dark:bg-slate-800 p-6 sm:p-8 md:p-12 rounded-2xl shadow-lg">
+            <!-- Post content will be injected here -->
+        </article>
+
+        <!-- Related Posts Section -->
+        <section id="related-posts" class="max-w-4xl mx-auto mt-16 hidden">
+            <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-8">आपको यह भी पसंद आएगा</h2>
+            <div id="related-posts-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Related posts will be injected here -->
+            </div>
+        </section>
     </main>
 
     <script>
         // --- Dark Mode Logic (No changes) ---
         // ... same as before ...
 
-        // --- Post Loading and TOC Logic ---
+        // --- Progress Bar Logic ---
+        window.addEventListener('scroll', () => {
+            const progressBar = document.getElementById('progress-bar');
+            const scrollTop = document.documentElement.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrollPercent = (scrollTop / scrollHeight) * 100;
+            progressBar.style.width = scrollPercent + "%";
+        });
+
+        // --- Post Loading Logic ---
         async function loadPost() {
             const params = new URLSearchParams(window.location.search);
             const slug = params.get('slug');
             const articleContainer = document.getElementById('post-content');
-            const tocContainer = document.getElementById('table-of-contents');
 
             if (!slug) return;
 
             try {
                 const blogsResponse = await fetch(`blogs.json?v=${new Date().getTime()}`);
-                const blogs = await blogsResponse.json();
-                const post = blogs.find(p => p.slug === slug);
+                const allBlogs = await blogsResponse.json();
+                const post = allBlogs.find(p => p.slug === slug);
 
                 if (!post) throw new Error('Post not found');
 
@@ -66,26 +77,15 @@
                 
                 document.title = `${post.title} - टेक ज्ञान`;
 
-                const tocHeadings = [];
                 let html = markdown
                     .replace(/^# (.*$)/gim, '')
-                    .replace(/^## (.*$)/gim, (match, p1) => {
-                        const id = p1.trim().toLowerCase().replace(/\s+/g, '-');
-                        tocHeadings.push({ id, title: p1.trim() });
-                        return `<h2 id="${id}">${p1}</h2>`;
-                    })
-                    // ... other replacements ...
-
-                // Build TOC
-                if(tocHeadings.length > 0) {
-                    let tocHTML = '<h3 class="text-lg font-bold mb-4">इस लेख में</h3><ul class="toc space-y-2">';
-                    tocHeadings.forEach(h => {
-                        tocHTML += `<li><a href="#${h.id}" class="text-slate-600 dark:text-slate-400 hover:text-blue-500 transition-colors">${h.title}</a></li>`;
-                    });
-                    tocHTML += '</ul>';
-                    tocContainer.innerHTML = tocHTML;
-                }
-
+                    .replace(/^## (.*$)/gim, '<h2 class="text-3xl font-bold mt-12 mb-6 border-l-4 border-blue-500 pl-4">$1</h2>')
+                    .replace(/^### (.*$)/gim, '<h3 class="text-2xl font-bold mt-8 mb-4">$1</h3>')
+                    .replace(/\*\*(.*)\*\*/g, '<strong>$1</strong>')
+                    .replace(/`([^`]+)`/g, '<code class="bg-slate-200 dark:bg-slate-700 text-sm rounded px-1.5 py-1 font-mono">$1</code>')
+                    .replace(/^- (.*$)/gim, '<li class="ml-6 list-disc mb-2">$1</li>')
+                    .replace(/\n/g, '<br>').replace(/<br><li/g, '<li').replace(/<\/li><br>/g, '</li>');
+                
                 articleContainer.innerHTML = `
                     <header class="mb-12">
                         <span class="bg-blue-100 text-blue-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">${post.category}</span>
@@ -94,25 +94,36 @@
                             <span>${post.date}</span><span>&bull;</span><span>${post.read_time} min read</span>
                         </div>
                     </header>
-                    <div class="markdown-content text-lg leading-relaxed">${html}</div>
+                    <div class="markdown-content text-lg leading-relaxed text-slate-700 dark:text-slate-300">${html}</div>
                     <!-- ... social share footer ... -->
                 `;
-                
-                // TOC active state on scroll
-                const observer = new IntersectionObserver(entries => {
-                    entries.forEach(entry => {
-                        const id = entry.target.getAttribute('id');
-                        const tocLink = document.querySelector(`.toc a[href="#${id}"]`);
-                        if (entry.isIntersecting) {
-                            document.querySelectorAll('.toc a').forEach(a => a.classList.remove('active'));
-                            tocLink.classList.add('active');
-                        }
-                    });
-                }, { rootMargin: "-30% 0px -60% 0px" });
-                document.querySelectorAll('.markdown-content h2').forEach(h2 => observer.observe(h2));
+
+                // Load Related Posts
+                loadRelatedPosts(allBlogs, post.category, post.slug);
 
             } catch (error) {
                 console.error("Failed to load post:", error);
+            }
+        }
+
+        function loadRelatedPosts(allBlogs, currentCategory, currentSlug) {
+            const relatedPosts = allBlogs.filter(p => p.category === currentCategory && p.slug !== currentSlug).slice(0, 3);
+            
+            if (relatedPosts.length > 0) {
+                const grid = document.getElementById('related-posts-grid');
+                grid.innerHTML = '';
+                relatedPosts.forEach(post => {
+                    const postCard = document.createElement('a');
+                    postCard.href = `post.html?slug=${post.slug}`;
+                    postCard.className = 'post-card block bg-white dark:bg-slate-800 rounded-2xl shadow-lg hover:shadow-xl dark:hover:shadow-blue-500/20 hover:-translate-y-2 transition-all duration-300 p-6';
+                    postCard.innerHTML = `
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2 h-14 overflow-hidden">${post.title}</h3>
+                        <p class="text-slate-600 dark:text-slate-300 text-xs">${post.excerpt}</p>
+                        <div class="mt-4 text-blue-500 dark:text-blue-400 text-sm font-semibold">पूरा पढ़ें &rarr;</div>
+                    `;
+                    grid.appendChild(postCard);
+                });
+                document.getElementById('related-posts').classList.remove('hidden');
             }
         }
         
@@ -120,3 +131,4 @@
     </script>
 </body>
 </html>
+
