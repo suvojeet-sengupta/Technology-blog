@@ -14,7 +14,7 @@ genai.configure(api_key=API_KEY)
 
 # --- QUOTA FIX: Switched back to the Flash model ---
 # It's much faster and has a more generous free tier, perfect for this project.
-text_model = genai.GenerativeModel('gemini-1.5-pro') 
+text_model = genai.GenerativeModel('gemini-1.5-flash-latest')
 
 # --- Expanded Topic Categories ---
 TOPIC_CATEGORIES = [
