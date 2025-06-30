@@ -11,26 +11,9 @@ if not API_KEY:
     raise ValueError("GEMINI_API_KEY environment variable not set!")
 
 genai.configure(api_key=API_KEY)
-
-# --- QUOTA FIX: Switched back to the Flash model ---
-# It's much faster and has a more generous free tier, perfect for this project.
 text_model = genai.GenerativeModel('gemini-1.5-flash-latest')
 
-# --- Expanded Topic Categories ---
-TOPIC_CATEGORIES = [
-    "Artificial Intelligence and its real-world impact",
-    "Quantum Computing and the next tech revolution",
-    "Space Exploration: Mars, Black Holes, and beyond",
-    "Biotechnology, Gene Editing, and the future of health",
-    "Neuroscience and Brain-Computer Interfaces (BCIs)",
-    "The science of Climate Change and Renewable Energy solutions",
-    "The future of the Internet: Web3, Metaverse, and Decentralization",
-    "Cybersecurity in the age of AI and digital warfare",
-    "The evolution of Robotics and Automation",
-    "Nanotechnology and its mind-boggling applications"
-]
-
-# --- Helper Functions ---
+# --- Helper Functions (No changes) ---
 def slugify(text):
     text = re.sub(r'[^\w\s-]', '', text).strip().lower()
     text = re.sub(r'[\s_-]+', '-', text)
@@ -42,40 +25,53 @@ def calculate_read_time(text):
     return max(1, round(read_time_min))
 
 def main():
-    print("🚀 Hinglish Pro AI Blog Generator Activated...")
+    print("🚀 Editor-in-Chief AI Blog Generator Activated...")
 
-    # --- 1. Generate a Diverse and Deep Topic ---
-    print("1. Selecting a deep topic from expanded categories...")
-    chosen_category = random.choice(TOPIC_CATEGORIES)
-    print(f"   - Category: {chosen_category}")
-    
+    # --- Step 1: The "Trend Hunter" - Find a trending topic ---
+    print("1. Asking Gemini for a trending Science/Tech topic...")
     try:
-        topic_prompt = f"From the category '{chosen_category}', suggest one specific, intriguing, and in-depth blog topic. The title should be a catchy mix of Hindi and English (Hinglish). For example: 'Quantum Computing: Future ka Super-Computer?'. Only provide the topic title, nothing else."
-        response = text_model.generate_content(topic_prompt)
-        blog_topic = response.text.strip().replace('"', '')
-        print(f"   - Topic: {blog_topic}")
+        # This prompt asks Gemini to act as an editor and find what's hot right now.
+        trend_hunter_prompt = """
+        Act as a tech journalist and editor for a popular Indian blog.
+        What is one of the most exciting and currently trending topics in the world of science or technology?
+        It could be a new breakthrough, a recent discovery, or a viral tech debate.
+        Respond with ONLY two things, separated by a pipe symbol (|):
+        1. A short category name (e.g., AI, Space, Biotech).
+        2. A catchy, clickable blog title in Hinglish for that topic.
+
+        Example: AI|AI Clones: Kya Aapka Digital Hamshakal Possible Hai?
+        """
+        response = text_model.generate_content(trend_hunter_prompt)
+        response_text = response.text.strip()
+        
+        if '|' not in response_text:
+            raise ValueError("Response from trend hunter prompt was not in the expected format.")
+
+        category, blog_topic = response_text.split('|', 1)
+        print(f"   - Trending Category: {category}")
+        print(f"   - Generated Topic: {blog_topic}")
+
     except Exception as e:
-        print(f"Error generating topic: {e}")
+        print(f"Error finding a trending topic: {e}")
         return
 
-    # --- 2. Generate a Long, Detailed, Organized Hinglish Blog Post ---
-    print("2. Generating a long-form, organized Hinglish article...")
+    # --- Step 2: The "Deep Dive" - Write the article ---
+    print("2. Generating a long-form, organized Hinglish article on the trending topic...")
     try:
         content_prompt = f"""
         विषय: "{blog_topic}"
-
-        You are an expert tech blogger who writes for an Indian audience. Write a very detailed, engaging, and well-organized blog post on this topic (around 1000-1200 words).
+        You are an expert tech blogger writing for an Indian audience. Write a very detailed, engaging, and well-organized blog post on this topic (around 1000-1200 words).
 
         **VERY IMPORTANT INSTRUCTIONS:**
-        1.  **Language:** Write in a natural, conversational mix of Hindi and English (Hinglish). Use English for technical terms and Hindi for explanations. For example: "Quantum bits, yaani 'qubits', normal bits se bilkul alag hote hain."
-        2.  **Structure and Organization:**
-            - Start with a powerful Title (Use #).
-            - Write a catchy Introduction that hooks the reader.
-            - Use multiple, clear subheadings (Use ##) to break down the topic.
-            - Explain complex concepts using simple analogies and real-world examples.
-            - Use bullet points (using '-') or numbered lists to present information like pros/cons, steps, or features.
-            - **Crucially, end the article with a section called '## Mukhya Baatein (Key Takeaways)'**. This section should summarize the most important points of the article in a quick, easy-to-read list.
-        3.  **Tone:** Professional yet super easy to understand. Make it feel like a smart friend is explaining something cool.
+        1.  **Language:** Write in a natural, conversational mix of Hindi and English (Hinglish).
+        2.  **Structure:**
+            - Start with the Title (Use #).
+            - Write a catchy Introduction.
+            - Use multiple, clear subheadings (Use ##).
+            - Explain complex concepts with simple analogies and real-world examples.
+            - Use bullet points ('-') for features/pros-cons.
+            - End with a '## Mukhya Baatein (Key Takeaways)' section summarizing the main points.
+        3.  **Tone:** Professional yet super easy to understand.
         4.  **Format:** Strictly Markdown.
         """
         response = text_model.generate_content(content_prompt)
@@ -85,7 +81,7 @@ def main():
         print(f"Error generating content: {e}")
         return
 
-    # --- 3. Save Files and Update JSON ---
+    # --- Step 3: Save Files and Update JSON (No changes in logic) ---
     print("3. Saving files and updating metadata...")
     today_date_str = datetime.now().strftime("%Y-%m-%d")
     post_slug = slugify(blog_topic)
@@ -117,7 +113,7 @@ def main():
         "slug": post_slug,
         "read_time": read_time,
         "excerpt": excerpt,
-        "category": chosen_category.split(' ')[0]
+        "category": category
     }
     
     blogs_data.insert(0, new_post_entry)
@@ -126,7 +122,7 @@ def main():
         json.dump(blogs_data, f, indent=4, ensure_ascii=False)
     print(f"   - Updated {blogs_json_path}.")
 
-    print("✅ Process complete! New Hinglish article is live.")
+    print("✅ Process complete! A new trending article is ready.")
 
 if __name__ == "__main__":
     main()

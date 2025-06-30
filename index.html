@@ -17,36 +17,36 @@
     </script>
     <style>
         body { font-family: 'Inter', 'Noto Sans Devanagari', sans-serif; scroll-behavior: smooth; }
-        .fade-in { animation: fadeIn 0.5s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in-up { animation: fadeInUp 0.6s ease-in-out forwards; opacity: 0; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem; }
     </style>
 </head>
-<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 transition-colors duration-300">
+<body class="bg-gray-50 dark:bg-black text-gray-800 dark:text-gray-200 transition-colors duration-300">
 
     <!-- Header -->
-    <header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg shadow-sm sticky top-0 z-20">
+    <header class="bg-white/70 dark:bg-black/70 backdrop-blur-xl shadow-sm sticky top-0 z-20 border-b border-gray-200 dark:border-gray-800">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
             <a href="/" class="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-blue-500 to-violet-500 bg-clip-text text-transparent">
                 टेक ज्ञान
             </a>
             <div class="flex items-center space-x-4">
-                <button id="theme-toggle" type="button" class="text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 focus:outline-none rounded-lg text-sm p-2.5">
-                    <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
-                    <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 5.05A1 1 0 003.636 6.464l.707.707a1 1 0 001.414-1.414l-.707-.707zM3 11a1 1 0 100-2H2a1 1 0 100 2h1zm7.536 2.464a1 1 0 01-1.414 0l-.707-.707a1 1 0 011.414-1.414l.707.707a1 1 0 010 1.414zM13.536 6.464a1 1 0 01-1.414 0l-.707-.707a1 1 0 011.414-1.414l.707.707a1 1 0 010 1.414z"></path></svg>
+                <button id="theme-toggle" type="button" class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none rounded-lg text-sm p-2.5">
+                    <!-- SVG Icons for theme toggle -->
                 </button>
             </div>
         </div>
     </header>
 
-    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-        <div class="text-center mb-16">
-            <h1 class="text-4xl md:text-6xl font-extrabold text-slate-900 dark:text-white leading-tight">Exploring the Frontiers of<br><span class="bg-gradient-to-r from-blue-500 to-violet-500 bg-clip-text text-transparent">Science & Technology</span></h1>
-            <p class="mt-6 text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">Har complex topic, ab aapki bhasha mein. A project by Suvojeet Sengupta.</p>
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
+        <div class="text-center mb-20 fade-in-up">
+            <h1 class="text-4xl md:text-6xl font-extrabold text-gray-900 dark:text-white leading-tight">The Future, Simplified.</h1>
+            <p class="mt-6 text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">Har complex topic, ab aapki bhasha mein. A fully-automated AI project by Suvojeet Sengupta.</p>
         </div>
 
-        <!-- Dynamic Category Sections -->
-        <div id="category-sections" class="space-y-16">
-            <!-- Category sections will be injected here -->
+        <!-- Blog Post Grid -->
+        <div id="posts-grid" class="card-grid">
+            <!-- Posts will be injected here -->
         </div>
     </main>
     
@@ -54,64 +54,42 @@
         // --- Dark Mode Logic (No changes) ---
         // ... same as before ...
 
-        // --- Blog Loading and Categorizing Logic ---
         async function loadBlogs() {
             try {
                 const response = await fetch(`blogs.json?v=${new Date().getTime()}`);
                 const allBlogs = await response.json();
-                
-                // Group blogs by category
-                const blogsByCategory = allBlogs.reduce((acc, blog) => {
-                    const category = blog.category || "General";
-                    if (!acc[category]) {
-                        acc[category] = [];
-                    }
-                    acc[category].push(blog);
-                    return acc;
-                }, {});
-
-                displayCategorizedBlogs(blogsByCategory);
-
+                displayBlogs(allBlogs);
             } catch (error) {
                 console.error("Failed to load blogs:", error);
             }
         }
 
-        function displayCategorizedBlogs(blogsByCategory) {
-            const container = document.getElementById('category-sections');
-            container.innerHTML = '';
+        function displayBlogs(blogs) {
+            const grid = document.getElementById('posts-grid');
+            grid.innerHTML = '';
 
-            for (const category in blogsByCategory) {
-                const section = document.createElement('section');
-                section.className = 'fade-in';
+            blogs.forEach((post, index) => {
+                const postCard = document.createElement('a');
+                postCard.href = `post.html?slug=${post.slug}`;
+                postCard.className = 'post-card block bg-white dark:bg-gray-900/50 dark:border dark:border-gray-800 rounded-2xl shadow-md hover:shadow-2xl dark:hover:shadow-blue-500/20 hover:-translate-y-2 transition-all duration-300 overflow-hidden fade-in-up';
+                postCard.style.animationDelay = `${index * 100}ms`;
                 
-                const posts = blogsByCategory[category];
-                let postsHTML = '';
-
-                posts.forEach(post => {
-                    postsHTML += `
-                        <a href="post.html?slug=${post.slug}" class="post-card block bg-white dark:bg-slate-800 rounded-2xl shadow-lg hover:shadow-xl dark:hover:shadow-blue-500/20 hover:-translate-y-2 transition-all duration-300 overflow-hidden">
-                            <div class="p-6">
-                                <div class="flex justify-between items-center text-xs text-slate-500 dark:text-slate-400 mb-3">
-                                    <span>${post.date}</span>
-                                    <span>${post.read_time} min read</span>
-                                </div>
-                                <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2 h-14 overflow-hidden">${post.title}</h3>
-                                <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed h-20 overflow-hidden">${post.excerpt}</p>
-                            </div>
-                            <div class="px-6 pb-6 mt-2 text-blue-500 dark:text-blue-400 font-semibold">पूरा पढ़ें &rarr;</div>
-                        </a>
-                    `;
-                });
-
-                section.innerHTML = `
-                    <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-8">${category}</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        ${postsHTML}
+                postCard.innerHTML = `
+                    <div class="p-6">
+                        <div class="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400 mb-4">
+                            <span class="font-bold px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full">${post.category}</span>
+                            <span>${post.read_time} min read</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3 h-20 overflow-hidden">${post.title}</h3>
+                        <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed h-24 overflow-hidden">${post.excerpt}</p>
+                    </div>
+                    <div class="px-6 pb-6 mt-2 text-blue-500 dark:text-blue-400 font-semibold flex items-center justify-between">
+                        <span>पूरा पढ़ें</span>
+                        <span>&rarr;</span>
                     </div>
                 `;
-                container.appendChild(section);
-            }
+                grid.appendChild(postCard);
+            });
         }
 
         window.onload = loadBlogs;
