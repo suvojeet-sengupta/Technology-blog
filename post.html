@@ -26,8 +26,6 @@
 <body class="bg-gray-100 dark:bg-black text-gray-800 dark:text-gray-200 transition-colors duration-300">
 
     <div id="progress-bar"></div>
-
-    <!-- Header -->
     <header class="bg-white/70 dark:bg-black/70 backdrop-blur-xl shadow-sm sticky top-0 z-20 border-b border-gray-200 dark:border-gray-800">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
             <a href="/" class="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-blue-500 to-violet-500 bg-clip-text text-transparent">
@@ -35,6 +33,7 @@
             </a>
             <div class="flex items-center space-x-4">
                 <button id="theme-toggle" type="button" class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none rounded-lg text-sm p-2.5">
+                    <!-- THEME ICONS - BUG FIX -->
                     <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
                     <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 5.05A1 1 0 003.636 6.464l.707.707a1 1 0 001.414-1.414l-.707-.707zM3 11a1 1 0 100-2H2a1 1 0 100 2h1zm7.536 2.464a1 1 0 01-1.414 0l-.707-.707a1 1 0 011.414-1.414l.707.707a1 1 0 010 1.414zM13.536 6.464a1 1 0 01-1.414 0l-.707-.707a1 1 0 011.414-1.414l.707.707a1 1 0 010 1.414z"></path></svg>
                 </button>
@@ -129,7 +128,6 @@
             }
 
             try {
-                // --- PATH FIX: Removed the incorrect '../' ---
                 const blogsResponse = await fetch(`blogs.json?v=${new Date().getTime()}`);
                 if (!blogsResponse.ok) throw new Error('Could not fetch blogs.json. Make sure the file exists in the root directory.');
                 const allBlogs = await blogsResponse.json();
@@ -137,7 +135,6 @@
 
                 if (!post) throw new Error(`Post with slug "${slug}" not found in blogs.json.`);
 
-                // --- PATH FIX: Removed the incorrect '../' ---
                 const markdownResponse = await fetch(`${post.post_path}`);
                 if (!markdownResponse.ok) throw new Error(`Could not fetch the markdown file at ${post.post_path}`);
                 const markdown = await markdownResponse.text();
