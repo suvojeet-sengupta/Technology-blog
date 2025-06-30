@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>टेक ज्ञान - By Suvojeet Sengupta</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f2f5;
+        }
+        .card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+        }
+        .loader {
+            border: 8px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 8px solid #3498db;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-10">
+        <div class="container mx-auto px-6 py-4">
+            <h1 class="text-3xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600">
+                टेक ज्ञान (Tech Gyan)
+            </h1>
+            <p class="text-center text-gray-500 mt-1">टेक्नोलॉजी की दुनिया, अब आपकी भाषा में।</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-8">
+        
+        <!-- Loading Indicator -->
+        <div id="loader" class="flex justify-center items-center h-64">
+            <div class="loader"></div>
+        </div>
+
+        <!-- Latest Blog Post Section -->
+        <section id="latest-post-container" class="hidden">
+            <h2 class="text-2xl font-bold mb-4 border-b-2 border-blue-500 pb-2">आज का ब्लॉग</h2>
+            <div id="latest-post" class="card p-6 md:p-8">
+                <!-- Latest post content will be injected here -->
+            </div>
+        </section>
+
+        <!-- All Posts Section -->
+        <section id="all-posts-container" class="hidden mt-12">
+            <h2 class="text-2xl font-bold mb-4 border-b-2 border-purple-500 pb-2">पुराने ब्लॉग्स</h2>
+            <div id="all-posts-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- All other posts will be listed here -->
+            </div>
+        </section>
+
+        <!-- Error Message -->
+        <div id="error-message" class="hidden text-center mt-10">
+            <h2 class="text-2xl font-bold text-red-500">Oops! कुछ गड़बड़ हो गई।</h2>
+            <p class="text-gray-600">ब्लॉग्स लोड नहीं हो पाए। कृपया कुछ देर बाद फिर प्रयास करें।</p>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white mt-12 py-8">
+        <div class="container mx-auto px-6 text-center">
+            <p class="text-lg font-semibold tracking-wide">A Project By Suvojeet Sengupta</p>
+            <p class="mt-2 text-gray-300">&copy; <span id="year"></span> टेक ज्ञान. All Rights Reserved.</p>
+            <p class="text-sm text-gray-400 mt-1">Automated with Gemini & GitHub Actions</p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Function to fetch and render a markdown file
+        async function renderMarkdown(container, markdownPath) {
+            try {
+                const response = await fetch(markdownPath);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const markdown = await response.text();
+                // Simple markdown to HTML conversion
+                let html = markdown
+                    .replace(/^### (.*$)/gim, '<h3 class="text-xl font-semibold mt-4 mb-2">$1</h3>')
+                    .replace(/^## (.*$)/gim, '<h2 class="text-2xl font-bold mt-6 mb-3">$1</h2>')
+                    .replace(/^# (.*$)/gim, '<h1 class="text-3xl font-bold mb-4">$1</h1>')
+                    .replace(/\*\*(.*)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*)\*/g, '<em>$1</em>')
+                    .replace(/`([^`]+)`/g, '<code class="bg-gray-200 text-sm rounded px-1 py-0.5">$1</code>')
+                    .replace(/\n/g, '<br>');
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Error fetching markdown:', error);
+                container.innerHTML = '<p class="text-red-500">इस ब्लॉग को लोड करने में विफल।</p>';
+            }
+        }
+
+        // Main function to load all blog data
+        async function loadBlogs() {
+            const loader = document.getElementById('loader');
+            const latestPostContainer = document.getElementById('latest-post-container');
+            const allPostsContainer = document.getElementById('all-posts-container');
+            const errorMessage = document.getElementById('error-message');
+
+            try {
+                // Fetch the list of blogs. Add a cache-busting query param.
+                const response = await fetch(`blogs.json?v=${new Date().getTime()}`);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const blogs = await response.json();
+
+                if (blogs && blogs.length > 0) {
+                    // Display the latest post (first in the array)
+                    const latest = blogs[0];
+                    const latestPostDiv = document.getElementById('latest-post');
+                    const latestImageHTML = latest.image_path ? `<img src="${latest.image_path}" alt="${latest.title}" class="w-full h-64 object-cover rounded-lg mb-6">` : '';
+                    
+                    latestPostDiv.innerHTML = `
+                        ${latestImageHTML}
+                        <h3 class="text-3xl font-bold mb-2">${latest.title}</h3>
+                        <p class="text-gray-500 text-sm mb-4">${latest.date}</p>
+                        <div id="latest-post-content" class="text-lg leading-relaxed"></div>
+                    `;
+                    await renderMarkdown(document.getElementById('latest-post-content'), latest.post_path);
+                    latestPostContainer.classList.remove('hidden');
+
+                    // Display all other posts
+                    const allPostsGrid = document.getElementById('all-posts-grid');
+                    if (blogs.length > 1) {
+                        const olderPosts = blogs.slice(1);
+                        olderPosts.forEach(post => {
+                            const postCard = document.createElement('div');
+                            postCard.className = 'card p-4 flex flex-col';
+                            const cardImageHTML = post.image_path ? `<img src="${post.image_path}" alt="${post.title}" class="w-full h-40 object-cover rounded-md mb-4">` : '';
+
+                            postCard.innerHTML = `
+                                ${cardImageHTML}
+                                <div class="flex-grow">
+                                    <h4 class="font-bold text-lg mb-1">${post.title}</h4>
+                                    <p class="text-gray-500 text-xs mb-3">${post.date}</p>
+                                </div>
+                                <a href="${post.post_path}" target="_blank" class="text-blue-500 hover:underline text-sm mt-2">पूरा पढ़ें &rarr;</a>
+                            `;
+                            allPostsGrid.appendChild(postCard);
+                        });
+                        allPostsContainer.classList.remove('hidden');
+                    }
+                } else {
+                     throw new Error('No blogs found in JSON.');
+                }
+
+            } catch (error) {
+                console.error("Failed to load blogs:", error);
+                errorMessage.classList.remove('hidden');
+            } finally {
+                loader.classList.add('hidden');
+            }
+        }
+
+        // Load blogs when the page loads
+        window.onload = loadBlogs;
+    </script>
+</body>
+</html>
+

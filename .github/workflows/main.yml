@@ -1,0 +1,56 @@
+name: Generate Daily Hindi Tech Blog Post
+
+on:
+  # Har din 00:00 UTC (5:30 AM IST) par run hoga
+  schedule:
+    - cron: '0 0 * * *'
+  # Manual trigger ke liye
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    # --- PERMISSION FIX ---
+    # Bot ko code push karne ki permission do
+    permissions:
+      contents: write
+      
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Generate New Blog Post
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python generate_post.py
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "AI Tech Blogger Bot"
+          git config --global user.email "bot@github.com"
+          
+          # Add all new and modified files to the staging area
+          git add .
+          
+          # Check if there is anything to commit in the staging area
+          if ! git diff --staged --quiet; then
+            echo "Changes detected. Committing and pushing..."
+            git commit -m "feat: ✨ New AI-generated blog post for $(date +'%Y-%m-%d')"
+            git push
+          else
+            echo "No changes to commit. Working tree is clean."
+          fi
+
