@@ -15,7 +15,7 @@ genai.configure(api_key=API_KEY)
 # --- MODEL UPDATED AS PER USER'S REQUEST ---
 # Using the model name you provided.
 # Note: If you face a "model not found" error, you can switch to 'gemini-1.5-pro-latest'.
-text_model = genai.GenerativeModel('gemini-2.5-flash') # Reverted to Pro as a stable, powerful choice. If you specifically want 2.5, you can change it back.
+text_model = genai.GenerativeModel('gemini-2.5-pro') # Reverted to Pro as a stable, powerful choice. If you specifically want 2.5, you can change it back.
 
 # --- Helper Functions (No changes) ---
 def slugify(text):
