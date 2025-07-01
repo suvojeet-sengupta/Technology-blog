@@ -30,41 +30,56 @@ def calculate_read_time(text):
     read_time_min = word_count / 200
     return max(1, round(read_time_min)) # Return at least 1 minute
 
+import argparse
+
 def main():
+    parser = argparse.ArgumentParser(description="Generate a new blog post for The Thinking Editor.")
+    parser.add_argument("--topic", type=str, help="The blog topic to write about.")
+    parser.add_argument("--category", type=str, help="The category for the blog topic.")
+    args = parser.parse_args()
+
     print("🚀 The Thinking Editor AI Blog Generator Activated...")
 
-    # --- Step 1: The "Editorial Meeting" - Let Gemini Decide the Topic ---
-    print("1. Holding editorial meeting with Gemini to decide today's topic...")
-    try:
-        # This new, smarter prompt asks Gemini to think like an editor.
-        editorial_prompt = """
-        You are the Editor-in-Chief for a top Indian tech and science blog. Your job is to decide today's article.
-        You have two choices:
-        1.  **A Trending Topic:** Pick a subject that is currently hot and making news in fields like AI, Space-Tech, Quantum Computing, Climate Tech, Biotech, or the Internet.
-        2.  **An Evergreen Knowledge Topic:** Pick a foundational concept that everyone should understand, like "How does GPS work?", "What is a Neural Network?", or "The science of black holes".
+    if args.topic and args.category:
+        # --- Manual Mode: Get topic and category from arguments ---
+        print("1. Running in Manual Mode with provided arguments.")
+        blog_topic = args.topic
+        category = args.category
+        print(f"   - Manual Topic: {blog_topic}")
+        print(f"   - Manual Category: {category}")
+    else:
+        # --- Automated Mode: Let Gemini decide the topic ---
+        print("1. Holding editorial meeting with Gemini to decide today's topic...")
+        try:
+            # This new, smarter prompt asks Gemini to think like an editor.
+            editorial_prompt = """
+            You are the Editor-in-Chief for a top Indian tech and science blog. Your job is to decide today's article.
+            You have two choices:
+            1.  **A Trending Topic:** Pick a subject that is currently hot and making news in fields like AI, Space-Tech, Quantum Computing, Climate Tech, Biotech, or the Internet.
+            2.  **An Evergreen Knowledge Topic:** Pick a foundational concept that everyone should understand, like "How does GPS work?", "What is a Neural Network?", or "The science of black holes".
 
-        Think, and then make a choice.
-        
-        After deciding, respond with ONLY two things, separated by a pipe symbol (|):
-        1.  A short, relevant category name (e.g., AI, Space, Science, Tech).
-        2.  A catchy, clickable blog title in Hinglish for your chosen topic.
+            Think, and then make a choice.
+            
+            After deciding, respond with ONLY two things, separated by a pipe symbol (|):
+            1.  A short, relevant category name (e.g., AI, Space, Science, Tech).
+            2.  A catchy, clickable blog title in Hinglish for your chosen topic.
 
-        Example for Trending: AI|Apple Intelligence: Kya Yeh Game Changer Hoga?
-        Example for Evergreen: Science|Black Holes: Universe ke Ultimate Mysteries!
-        """
-        response = text_model.generate_content(editorial_prompt)
-        response_text = response.text.strip()
-        
-        if '|' not in response_text:
-            raise ValueError("Response from editorial prompt was not in the expected format.")
+            Example for Trending: AI|Apple Intelligence: Kya Yeh Game Changer Hoga?
+            Example for Evergreen: Science|Black Holes: Universe ke Ultimate Mysteries!
+            """
+            response = text_model.generate_content(editorial_prompt)
+            response_text = response.text.strip()
+            
+            if '|' not in response_text:
+                raise ValueError("Response from editorial prompt was not in the expected format.")
 
-        category, blog_topic = response_text.split('|', 1)
-        print(f"   - Editor's Choice Category: {category}")
-        print(f"   - Finalized Topic: {blog_topic}")
+            category, blog_topic = response_text.split('|', 1)
+            print(f"   - Editor's Choice Category: {category}")
+            print(f"   - Finalized Topic: {blog_topic}")
 
-    except Exception as e:
-        print(f"Error in editorial meeting: {e}")
-        return
+        except Exception as e:
+            print(f"Error in editorial meeting: {e}")
+            return
 
     # --- Step 2: The "Writer's Room" - Write the article ---
     print("2. Generating a long-form, organized Hinglish article on the chosen topic...")

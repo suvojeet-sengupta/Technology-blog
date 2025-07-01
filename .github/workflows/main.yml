@@ -6,6 +6,13 @@ on:
     - cron: '0 0 * * *'
   # Manual trigger ke liye
   workflow_dispatch:
+    inputs:
+      blog_topic:
+        description: 'Blog Topic (Optional)'
+        required: false
+      category:
+        description: 'Category (Optional)'
+        required: false
 
 jobs:
   build-and-deploy:
@@ -35,7 +42,12 @@ jobs:
       - name: Generate New Blog Post
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: python generate_post.py
+        run: |
+          if [ -n "${{ github.event.inputs.blog_topic }}" ] && [ -n "${{ github.event.inputs.category }}" ]; then
+            python generate_post.py --topic "${{ github.event.inputs.blog_topic }}" --category "${{ github.event.inputs.category }}"
+          else
+            python generate_post.py
+          fi
 
       - name: Commit and Push Changes
         run: |
