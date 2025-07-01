@@ -9,30 +9,57 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;700&display=swap" rel="stylesheet">
     <script>
+        // On page load or when changing themes, best to add inline in `head` to avoid FOUC
         if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
         } else {
-            document.documentElement.classList.remove('dark');
+            document.documentElement.classList.remove('dark')
         }
     </script>
     <style>
-        body { font-family: 'Inter', 'Noto Sans Devanagari', sans-serif; scroll-behavior: smooth; }
-        .fade-in-up { animation: fadeInUp 0.6s ease-in-out forwards; opacity: 0; }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem; }
+        body { 
+            font-family: 'Inter', 'Noto Sans Devanagari', sans-serif; 
+            scroll-behavior: smooth; 
+        }
+        .fade-in-up { 
+            animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; 
+            opacity: 0; 
+        }
+        @keyframes fadeInUp { 
+            from { opacity: 0; transform: translateY(30px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        .card-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
+            gap: 2.5rem; 
+        }
+        .post-card {
+            border: 1px solid transparent;
+        }
+        .post-card:hover {
+            border-color: rgba(99, 102, 241, 0.5); /* Indigo-500 with 50% opacity */
+        }
+        .hero-bg {
+            background-image: radial-gradient(circle at top right, rgba(4, 120, 87, 0.1), transparent 40%),
+                              radial-gradient(circle at bottom left, rgba(99, 102, 241, 0.1), transparent 50%);
+        }
+        .dark .hero-bg {
+             background-image: radial-gradient(circle at top right, rgba(52, 211, 153, 0.1), transparent 40%),
+                              radial-gradient(circle at bottom left, rgba(129, 140, 248, 0.1), transparent 50%);
+        }
     </style>
 </head>
-<body class="bg-gray-50 dark:bg-black text-gray-800 dark:text-gray-200 transition-colors duration-300">
+<body class="bg-gray-50 dark:bg-black text-gray-800 dark:text-gray-300 transition-colors duration-300">
 
     <!-- Header -->
-    <header class="bg-white/70 dark:bg-black/70 backdrop-blur-xl shadow-sm sticky top-0 z-20 border-b border-gray-200 dark:border-gray-800">
+    <header class="bg-white/80 dark:bg-black/80 backdrop-blur-xl shadow-sm sticky top-0 z-20 border-b border-gray-200 dark:border-gray-800">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-            <a href="/" class="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-blue-500 to-violet-500 bg-clip-text text-transparent">
+            <a href="/" class="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">
                 टेक ज्ञान
             </a>
             <div class="flex items-center space-x-4">
                 <button id="theme-toggle" type="button" class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none rounded-lg text-sm p-2.5">
-                    <!-- THEME ICONS - BUG FIX -->
                     <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
                     <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 5.05A1 1 0 003.636 6.464l.707.707a1 1 0 001.414-1.414l-.707-.707zM3 11a1 1 0 100-2H2a1 1 0 100 2h1zm7.536 2.464a1 1 0 01-1.414 0l-.707-.707a1 1 0 011.414-1.414l.707.707a1 1 0 010 1.414zM13.536 6.464a1 1 0 01-1.414 0l-.707-.707a1 1 0 011.414-1.414l.707.707a1 1 0 010 1.414z"></path></svg>
                 </button>
@@ -40,17 +67,27 @@
         </div>
     </header>
 
-    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
-        <div class="text-center mb-20 fade-in-up">
-            <h1 class="text-4xl md:text-6xl font-extrabold text-gray-900 dark:text-white leading-tight">The Future, Simplified.</h1>
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Hero Section -->
+        <section class="text-center py-20 sm:py-28 md:py-32 hero-bg rounded-3xl my-8 md:my-12 fade-in-up">
+            <h1 class="text-4xl md:text-6xl font-extrabold text-gray-900 dark:text-white leading-tight tracking-tighter">The Future, Simplified.</h1>
             <p class="mt-6 text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">Har complex topic, ab aapki bhasha mein. A fully-automated AI project by Suvojeet Sengupta.</p>
-        </div>
+        </section>
 
         <!-- Blog Post Grid -->
-        <div id="posts-grid" class="card-grid">
-            <!-- Posts will be injected here -->
+        <div id="posts-grid" class="card-grid py-12">
+            <!-- Posts will be dynamically injected here by JavaScript -->
         </div>
     </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-200 dark:border-gray-800">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center text-gray-500 dark:text-gray-400">
+            <p>&copy; ${new Date().getFullYear()} टेक ज्ञान. All Rights Reserved.</p>
+            <p class="mt-2">A personal project by <a href="https://github.com/suvojit213" class="text-indigo-500 hover:underline">Suvojeet Sengupta</a>.</p>
+        </div>
+    </footer>
     
     <script>
         // --- Dark Mode Logic ---
@@ -58,74 +95,76 @@
         const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
         const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
 
-        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            themeToggleLightIcon.classList.remove('hidden');
-        } else {
-            themeToggleDarkIcon.classList.remove('hidden');
+        // Function to set the theme
+        function setTheme(isDark) {
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+                themeToggleLightIcon.classList.remove('hidden');
+                themeToggleDarkIcon.classList.add('hidden');
+                localStorage.setItem('color-theme', 'dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+                themeToggleDarkIcon.classList.remove('hidden');
+                themeToggleLightIcon.classList.add('hidden');
+                localStorage.setItem('color-theme', 'light');
+            }
         }
 
-        if(themeToggleButton) {
-            themeToggleButton.addEventListener('click', function() {
-                themeToggleDarkIcon.classList.toggle('hidden');
-                themeToggleLightIcon.classList.toggle('hidden');
-                if (localStorage.getItem('color-theme')) {
-                    if (localStorage.getItem('color-theme') === 'light') {
-                        document.documentElement.classList.add('dark');
-                        localStorage.setItem('color-theme', 'dark');
-                    } else {
-                        document.documentElement.classList.remove('dark');
-                        localStorage.setItem('color-theme', 'light');
-                    }
-                } else {
-                    if (document.documentElement.classList.contains('dark')) {
-                        document.documentElement.classList.remove('dark');
-                        localStorage.setItem('color-theme', 'light');
-                    } else {
-                        document.documentElement.classList.add('dark');
-                        localStorage.setItem('color-theme', 'dark');
-                    }
-                }
-            });
-        }
+        // Initial theme check
+        const isDarkMode = localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        setTheme(isDarkMode);
 
+        themeToggleButton.addEventListener('click', function() {
+            setTheme(!document.documentElement.classList.contains('dark'));
+        });
+
+        // --- Blog Loading Logic ---
         async function loadBlogs() {
             try {
+                // Use a cache-busting query parameter to ensure the latest JSON is fetched
                 const response = await fetch(`blogs.json?v=${new Date().getTime()}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
                 const allBlogs = await response.json();
                 displayBlogs(allBlogs);
             } catch (error) {
                 console.error("Failed to load blogs:", error);
+                const grid = document.getElementById('posts-grid');
+                grid.innerHTML = '<p class="text-center col-span-full">Failed to load blog posts. Please try again later.</p>';
             }
         }
 
         function displayBlogs(blogs) {
             const grid = document.getElementById('posts-grid');
+            if (!grid) return;
             grid.innerHTML = '';
 
             blogs.forEach((post, index) => {
                 const postCard = document.createElement('a');
                 postCard.href = `post.html?slug=${post.slug}`;
-                postCard.className = 'post-card block bg-white dark:bg-gray-900/50 dark:border dark:border-gray-800 rounded-2xl shadow-md hover:shadow-2xl dark:hover:shadow-blue-500/20 hover:-translate-y-2 transition-all duration-300 overflow-hidden fade-in-up';
+                postCard.className = 'post-card group block bg-white dark:bg-gray-900 rounded-2xl shadow-md hover:shadow-xl dark:hover:shadow-indigo-500/20 hover:-translate-y-1 transition-all duration-300 overflow-hidden fade-in-up border border-gray-200 dark:border-gray-800';
                 postCard.style.animationDelay = `${index * 100}ms`;
                 
                 postCard.innerHTML = `
                     <div class="p-6">
                         <div class="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400 mb-4">
-                            <span class="font-bold px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full">${post.category}</span>
+                            <span class="font-bold px-3 py-1 bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-300 rounded-full">${post.category}</span>
                             <span>${post.read_time} min read</span>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3 h-20 overflow-hidden">${post.title}</h3>
-                        <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed h-24 overflow-hidden">${post.excerpt}</p>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200">${post.title}</h3>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">${post.excerpt}</p>
                     </div>
-                    <div class="px-6 pb-6 mt-2 text-blue-500 dark:text-blue-400 font-semibold flex items-center justify-between">
+                    <div class="px-6 pb-6 mt-4 text-indigo-500 dark:text-indigo-400 font-semibold flex items-center justify-between">
                         <span>पूरा पढ़ें</span>
-                        <span>&rarr;</span>
+                        <span class="group-hover:translate-x-1 transition-transform duration-200">&rarr;</span>
                     </div>
                 `;
                 grid.appendChild(postCard);
             });
         }
 
+        // Initial load
         window.onload = loadBlogs;
     </script>
 </body>
