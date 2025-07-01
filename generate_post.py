@@ -11,7 +11,7 @@ if not API_KEY:
     raise ValueError("GEMINI_API_KEY environment variable not set!")
 
 genai.configure(api_key=API_KEY)
-text_model = genai.GenerativeModel('gemini-1.5-flash-latest')
+text_model = genai.GenerativeModel('gemini-2.5-flash')
 
 # --- Helper Functions (No changes) ---
 def slugify(text):
